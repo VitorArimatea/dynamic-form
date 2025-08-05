@@ -1,42 +1,63 @@
-export interface Formulario {
+export interface Form {
   id: string;
-  titulo: string;
-  descricao: string;
-  ordem: number;
+  title: string;
+  description: string;
+  order: number;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
-export interface Pergunta {
+export interface Question {
   id: string;
-  id_formulario: string;
-  titulo: string;
-  codigo: string;
-  orientacao_resposta: string;
-  ordem: number;
-  obrigatoria: boolean;
-  sub_pergunta: boolean;
-  tipo_pergunta: TipoPergunta;
+  formId: string;
+  title: string;
+  code: string;
+  answerGuidance: string;
+  order: number;
+  required: boolean;
+  subQuestion: boolean;
+  questionType: QuestionType;
 }
 
-export type TipoPergunta =
-  | "Sim_Não"
-  | "multipla_escolha"
-  | "unica_escolha"
-  | "texto_livre"
-  | "Inteiro"
-  | "Numero com duas casas decimais";
+export type QuestionType =
+  | "yes_no"
+  | "multiple_choice"
+  | "single_choice"
+  | "free_text"
+  | "integer"
+  | "decimal_two_places";
 
-export interface OpcoesRespostas {
+export interface AnswerOption {
   id: string;
-  id_pergunta: string;
-  resposta: string;
-  ordem: number;
-  resposta_aberta: boolean;
+  questionId: string;
+  answer: string;
+  order: number;
+  openAnswer: boolean;
 }
 
-export interface OpcoesRespostaPergunta {
+export interface QuestionAnswerOption {
   id: string;
-  id_pergunta: string;
-  id_opcao_resposta: string;
+  answerOptionId: string;
+  questionId: string;
 }
 
+export interface UserAnswer {
+  id: string;
+  formId: string;
+  questionId: string;
+  answer: string;
+  createdAt: Date;
+}
 
+export interface QuestionConditionality {
+  questionId: string;
+  conditionValue: string;
+  questionsToShow: string[];
+}
+
+export interface CompleteForm extends Form {
+  questions: (Question & {
+    options: AnswerOption[];
+    conditionalities?: QuestionConditionality[];
+  })[];
+}
