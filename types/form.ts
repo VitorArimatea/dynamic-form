@@ -17,6 +17,8 @@ export interface Question {
   required: boolean;
   subQuestion: boolean;
   questionType: QuestionType;
+  conditionalParentId?: string;
+  conditionalValue?: string;
 }
 
 export type QuestionType =
@@ -53,6 +55,12 @@ export interface QuestionConditionality {
   questionId: string;
   conditionValue: string;
   questionsToShow: string[];
+}
+
+export interface ConditionalRule {
+  parentQuestionId: string;
+  parentValue: string;
+  childQuestionId: string;
 }
 
 export interface CompleteForm extends Form {
