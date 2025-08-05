@@ -97,7 +97,7 @@ export default function EditFormPage({ params }: Props) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    let foundForm = getFormById(id);
+    let foundForm: CompleteForm | null | undefined = getFormById(id);
 
     if (!foundForm) {
       foundForm = mockDataService.getCompleteForm(id);

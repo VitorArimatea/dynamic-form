@@ -7,8 +7,8 @@ import { useParams } from "next/navigation";
 
 import { mockDataService } from "@/lib/mock-data";
 import { CompleteForm, Question } from "@/types/form";
-import { ConditionalLogic } from "@/lib/conditional-logic";
-import { submitFormAnswers } from "@/lib/actions";
+import { ConditionalLogic } from "@/lib/actions/conditional-logic";
+import { submitFormAnswers } from "@/lib/actions/actions";
 import { getFormById } from "@/lib/form-sync";
 import { Button } from "@/app/components/ui/button";
 import { Card, CardContent } from "@/app/components/ui/card";
@@ -79,13 +79,13 @@ export default function FormPage() {
   }, [id, answers, validateForm]);
 
   useEffect(() => {
-    let foundForm = getFormById(id);
+    let foundForm: CompleteForm | null | undefined = getFormById(id);
 
     if (!foundForm) {
       foundForm = mockDataService.getCompleteForm(id);
     }
 
-    setForm(foundForm);
+    setForm(foundForm || null);
     setIsLoading(false);
   }, [id]);
 
