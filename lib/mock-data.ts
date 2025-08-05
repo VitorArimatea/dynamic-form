@@ -9,13 +9,42 @@ import {
   UserAnswer,
 } from "@/types/form";
 
-let forms: Form[] = [];
-let questions: Question[] = [];
-let options: AnswerOption[] = [];
-let answers: UserAnswer[] = [];
+const STORAGE_KEY = "dynamic-forms-data";
+
+const saveToStorage = (data: any) => {
+  if (typeof window !== "undefined") {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  }
+};
+
+const loadFromStorage = () => {
+  if (typeof window !== "undefined") {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    return stored ? JSON.parse(stored) : null;
+  }
+  return null;
+};
+
+const storedData = loadFromStorage();
+let forms: Form[] = storedData?.forms
+  ? storedData.forms.map((form: any) => ({
+      ...form,
+      createdAt: new Date(form.createdAt),
+      updatedAt: new Date(form.updatedAt),
+    }))
+  : [];
+let questions: Question[] = storedData?.questions || [];
+let options: AnswerOption[] = storedData?.options || [];
+const answers: UserAnswer[] = storedData?.answers || [];
 
 export const initializeMockData = () => {
+  if (forms.length > 0) {
+    console.log("Mock data already initialized, skipping...");
+    return;
+  }
+
   const formId = uuidv4();
+  console.log("Initializing mock data...");
 
   forms = [
     {
@@ -144,10 +173,21 @@ export const initializeMockData = () => {
   ];
 };
 
-// CRUD operations
 export const mockDataService = {
-  // Forms
-  getForms: (): Form[] => forms,
+  getForms: (): Form[] => {
+    const storedData = loadFromStorage();
+    if (storedData?.forms) {
+      forms.length = 0;
+      const formsWithDates = storedData.forms.map((form: any) => ({
+        ...form,
+        createdAt: new Date(form.createdAt),
+        updatedAt: new Date(form.updatedAt),
+      }));
+      forms.push(...formsWithDates);
+    }
+    console.log("getForms called. Current forms.length:", forms.length);
+    return forms;
+  },
 
   getForm: (id: string): Form | undefined => forms.find((f) => f.id === id),
 
@@ -159,6 +199,12 @@ export const mockDataService = {
       updatedAt: new Date(),
     };
     forms.push(newForm);
+
+    saveToStorage({ forms, questions, options, answers });
+
+    console.log("Form added to forms array. Total forms:", forms.length);
+    console.log("Saved to localStorage");
+
     return newForm;
   },
 
@@ -171,6 +217,10 @@ export const mockDataService = {
       ...updates,
       updatedAt: new Date(),
     };
+
+    saveToStorage({ forms, questions, options, answers });
+    console.log("Form updated and saved to localStorage");
+
     return forms[index];
   },
 
@@ -179,12 +229,10 @@ export const mockDataService = {
     if (index === -1) return false;
 
     forms.splice(index, 1);
-    // Remove related questions
     questions = questions.filter((q) => q.formId !== id);
     return true;
   },
 
-  // Questions
   getQuestionsByForm: (formId: string): Question[] =>
     questions
       .filter((q) => q.formId === formId)
@@ -198,6 +246,9 @@ export const mockDataService = {
       conditionalValue: question.conditionalValue,
     };
     questions.push(newQuestion);
+
+    saveToStorage({ forms, questions, options, answers });
+
     return newQuestion;
   },
 
@@ -217,12 +268,10 @@ export const mockDataService = {
     if (index === -1) return false;
 
     questions.splice(index, 1);
-    // Remove related options
     options = options.filter((o) => o.questionId !== id);
     return true;
   },
 
-  // Answer options
   getOptionsByQuestion: (questionId: string): AnswerOption[] =>
     options
       .filter((o) => o.questionId === questionId)
@@ -234,6 +283,8 @@ export const mockDataService = {
       id: uuidv4(),
     };
     options.push(newOption);
+    saveToStorage({ forms, questions, options, answers });
+
     return newOption;
   },
 
@@ -256,10 +307,39 @@ export const mockDataService = {
     return true;
   },
 
-  // Complete form
   getCompleteForm: (id: string): CompleteForm | undefined => {
+    const storedData = loadFromStorage();
+    if (storedData?.forms) {
+      forms.length = 0;
+      const formsWithDates = storedData.forms.map((form: any) => ({
+        ...form,
+        createdAt: new Date(form.createdAt),
+        updatedAt: new Date(form.updatedAt),
+      }));
+      forms.push(...formsWithDates);
+
+      if (storedData.questions) {
+        questions.length = 0;
+        questions.push(...storedData.questions);
+      }
+
+      if (storedData.options) {
+        options.length = 0;
+        options.push(...storedData.options);
+      }
+    }
+
+    console.log(
+      "getCompleteForm - All questions:",
+      questions.filter((q) => q.formId === id)
+    );
+    console.log("getCompleteForm - All options:", options);
+
     const form = forms.find((f) => f.id === id);
-    if (!form) return undefined;
+    if (!form) {
+      console.error("Form not found:", id);
+      return undefined;
+    }
 
     const formQuestions = questions
       .filter((q) => q.formId === id)
@@ -300,4 +380,7 @@ export const mockDataService = {
   ],
 };
 
-initializeMockData();
+if (!loadFromStorage() || forms.length === 0) {
+  initializeMockData();
+  saveToStorage({ forms, questions, options, answers });
+}
