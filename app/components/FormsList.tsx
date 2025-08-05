@@ -1,3 +1,5 @@
+"use client";
+
 import { mockDataService } from "@/lib/mock-data";
 
 import {
