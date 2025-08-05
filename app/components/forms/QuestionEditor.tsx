@@ -148,9 +148,10 @@ const QuestionEditor = ({
                 <Label className="text-sm">Pergunta que Controla</Label>
                 <Select
                   value={question.conditionalParentId || ""}
-                  onValueChange={(value) =>
-                    onUpdate("conditionalParentId", value)
-                  }
+                  onValueChange={(value) => {
+                    onUpdate("conditionalParentId", value);
+                    onUpdate("conditionalValue", "");
+                  }}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Selecione a pergunta" />
@@ -158,22 +159,19 @@ const QuestionEditor = ({
                   <SelectContent>
                     {allQuestions
                       .filter((q, i) => i < index && !q.subQuestion)
-                      .map((q) => (
+                      .map((q, qIndex) => (
                         <SelectItem key={q.id} value={q.id}>
-                          {q.title || `Pergunta ${allQuestions.indexOf(q) + 1}`}
+                          {q.title || `Pergunta ${qIndex + 1}`}
                         </SelectItem>
                       ))}
                   </SelectContent>
                 </Select>
               </div>
-              <div>
-                <Label className="text-sm">Resposta que Ativa</Label>
-                <Input
-                  value={question.conditionalValue || ""}
-                  onChange={(e) => onUpdate("conditionalValue", e.target.value)}
-                  placeholder="Ex: Sim, Não, Excelente..."
-                />
-              </div>
+              <ConditionalValueSelector
+                question={question}
+                allQuestions={allQuestions}
+                onUpdate={onUpdate}
+              />
             </div>
             <p className="text-xs text-blue-600">
               Esta pergunta aparecerá apenas quando o usuário responder com o
@@ -187,7 +185,6 @@ const QuestionEditor = ({
           </div>
         )}
 
-        {/* Options for single and multiple choice */}
         {(question.questionType === "single_choice" ||
           question.questionType === "multiple_choice") && (
           <div className="border-t pt-4">
@@ -229,6 +226,100 @@ const QuestionEditor = ({
         )}
       </CardContent>
     </Card>
+  );
+};
+
+interface ConditionalValueSelectorProps {
+  question: {
+    conditionalParentId?: string;
+    conditionalValue?: string;
+  };
+  allQuestions: any[];
+  onUpdate: (field: string, value: any) => void;
+}
+
+const ConditionalValueSelector = ({
+  question,
+  allQuestions,
+  onUpdate,
+}: ConditionalValueSelectorProps) => {
+  const parentQuestion = allQuestions.find(
+    (q) => q.id === question.conditionalParentId
+  );
+
+  if (!parentQuestion) {
+    return (
+      <div>
+        <Label className="text-sm">Resposta que Ativa</Label>
+        <Input
+          value={question.conditionalValue || ""}
+          onChange={(e) => onUpdate("conditionalValue", e.target.value)}
+          placeholder="Selecione uma pergunta pai primeiro"
+          disabled
+        />
+      </div>
+    );
+  }
+
+  if (parentQuestion.questionType === "yes_no") {
+    return (
+      <div>
+        <Label className="text-sm">Resposta que Ativa</Label>
+        <Select
+          value={question.conditionalValue || ""}
+          onValueChange={(value) => onUpdate("conditionalValue", value)}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Selecione Sim ou Não" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="Sim">Sim</SelectItem>
+            <SelectItem value="Não">Não</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+    );
+  }
+
+  if (
+    (parentQuestion.questionType === "single_choice" ||
+      parentQuestion.questionType === "multiple_choice") &&
+    parentQuestion.options?.length > 0
+  ) {
+    return (
+      <div>
+        <Label className="text-sm">Resposta que Ativa</Label>
+        <Select
+          value={question.conditionalValue || ""}
+          onValueChange={(value) => onUpdate("conditionalValue", value)}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Selecione uma opção" />
+          </SelectTrigger>
+          <SelectContent>
+            {parentQuestion.options.map((option: any) => (
+              <SelectItem key={option.id} value={option.answer}>
+                {option.answer}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <Label className="text-sm">Resposta que Ativa</Label>
+      <Input
+        value={question.conditionalValue || ""}
+        onChange={(e) => onUpdate("conditionalValue", e.target.value)}
+        placeholder="Digite o valor exato da resposta"
+      />
+      <p className="text-xs text-gray-500 mt-1">
+        Digite exatamente como o usuário deve responder
+      </p>
+    </div>
   );
 };
 

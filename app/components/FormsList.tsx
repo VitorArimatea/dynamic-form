@@ -1,6 +1,9 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { mockDataService } from "@/lib/mock-data";
+import { Form } from "@/types/form";
+import { getAllForms } from "@/lib/form-sync";
 
 import {
   Card,
@@ -15,7 +18,36 @@ import { Eye, FileText, Plus } from "lucide-react";
 import Link from "next/link";
 
 const FormsList = () => {
-  const forms = mockDataService.getForms();
+  const [forms, setForms] = useState<Form[]>([]);
+
+  useEffect(() => {
+    const loadForms = () => {
+      // Carrega formulários do mock (inicial) e do novo sistema
+      const mockForms = mockDataService.getForms();
+      const syncedForms = getAllForms();
+
+      // Combina ambos evitando duplicatas
+      const allForms = [...mockForms];
+      syncedForms.forEach((syncForm) => {
+        if (!allForms.find((f) => f.id === syncForm.id)) {
+          allForms.push(syncForm);
+        }
+      });
+
+      console.log("📋 Total forms loaded:", allForms.length);
+      console.log(
+        "Forms:",
+        allForms.map((f) => f.title)
+      );
+      setForms(allForms);
+    };
+
+    loadForms();
+
+    // Recarrega a cada 1 segundo
+    const interval = setInterval(loadForms, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
