@@ -1,8 +1,33 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Dynamic Forms - Sistema de Formulários Dinâmicos
 
-## Getting Started
+Aplicação web desenvolvida com **Next.js**, **TailwindCSS**, **Shadcn/ui** e **TypeScript**, permite criar formulários dinâmicos para coleta de respostas com sistema de condicionalidades.
 
-First, run the development server:
+![Next.js](https://img.shields.io/badge/Next.js-15.4.5-black?logo=next.js)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?logo=typescript)
+![TailwindCSS](https://img.shields.io/badge/TailwindCSS-4-38BDF8?logo=tailwindcss)
+![Shadcn/ui](https://img.shields.io/badge/Shadcn/ui-Components-000000)
+
+## 📋 Pré-requisitos
+
+- **Node.js** versão 18 ou superior
+- **npm**, **yarn**, **pnpm** ou **bun** para gerenciamento de pacotes
+
+## 🔧 Instalação e Execução
+
+### 1. Clone o repositório
+
+```bash
+git clone https://github.com/VitorArimatea/dynamic-form.git
+cd dynamic-form
+```
+
+### 2. Instale as dependências
+
+```bash
+npm install
+```
+
+### 3. Execute o projeto em modo de desenvolvimento
 
 ```bash
 npm run dev
@@ -14,23 +39,52 @@ pnpm dev
 bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 4. Acesse a aplicação
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Abra [http://localhost:3000](http://localhost:3000) no seu navegador.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🎯 Como Usar
 
-## Learn More
+### 1. Página Inicial
 
-To learn more about Next.js, take a look at the following resources:
+- Visualize todos os formulários criados
+- Acesse opção para criar novo formulário
+- Edite ou visualize formulários existentes
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### 2. Criar Formulário
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. Acesse "Criar Formulário" na página inicial
+2. Preencha título e descrição do formulário
+3. Adicione perguntas usando o botão "Adicionar Pergunta"
+4. Configure cada pergunta:
+   - **Título**: Titulo da pergunta
+   - **Tipo**: Escolha entre os tipos disponíveis
+   - **Orientação**: Dica para o usuário
+   - **Obrigatória**: Marque se a pergunta é obrigatória
+   - **Sub-pergunta**: Marque para criar condicionalidades
+   - **Opções**: Para perguntas de múltipla/única escolha
+5. Salve o formulário
 
-## Deploy on Vercel
+### 3. Sistema de Condicionalidades
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- **Sub-perguntas** só aparecem quando marcadas como tal
+- A lógica implementada mostra sub-perguntas quando:
+  - Pergunta anterior (Sim/Não): resposta = "Sim"
+  - Pergunta anterior (única escolha): resposta ≠ última opção
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### 4. Preencher Formulário
+
+1. Acesse um formulário através da página inicial
+2. Responda as perguntas seguindo as orientações
+3. Observe que sub-perguntas aparecem dinamicamente
+4. Submeta as respostas (validação automática)
+
+## 🔄 Sistema de Dados
+
+### Estrutura Mockada
+
+Os dados são armazenados em memória durante o desenvolvimento.
+
+## 📄 Licença
+
+Este projeto foi desenvolvido como parte de um desafio técnico.
