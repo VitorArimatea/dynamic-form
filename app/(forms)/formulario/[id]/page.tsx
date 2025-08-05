@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -8,6 +8,8 @@ import { useParams } from "next/navigation";
 import { mockDataService } from "@/lib/mock-data";
 import { CompleteForm, Question } from "@/types/form";
 import { ConditionalLogic } from "@/lib/conditional-logic";
+import { submitFormAnswers } from "@/lib/actions";
+import { getFormById } from "@/lib/form-sync";
 import { Button } from "@/app/components/ui/button";
 import { Card, CardContent } from "@/app/components/ui/card";
 import { QuestionRenderer } from "@/app/components/forms/QuestionRenderer";
@@ -21,25 +23,25 @@ export default function FormPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
-  useEffect(() => {
-    const foundForm = mockDataService.getCompleteForm(id);
-    if (foundForm) setForm(foundForm);
-    setIsLoading(false);
-  }, [params.id]);
+  const handleAnswerChange = useCallback(
+    (questionId: string, value: string | string[]) => {
+      setAnswers((prev) => ({
+        ...prev,
+        [questionId]: value,
+      }));
+    },
+    []
+  );
 
-  const handleAnswerChange = (questionId: string, value: string | string[]) => {
-    setAnswers((prev) => ({
-      ...prev,
-      [questionId]: value,
-    }));
-  };
+  const shouldShowQuestion = useCallback(
+    (question: Question): boolean => {
+      if (!form) return true;
+      return ConditionalLogic.shouldShowQuestion(question, form, answers);
+    },
+    [form, answers]
+  );
 
-  const shouldShowQuestion = (question: Question): boolean => {
-    if (!form) return true;
-    return ConditionalLogic.shouldShowQuestion(question, form, answers);
-  };
-
-  const validateForm = (): boolean => {
+  const validateForm = useCallback((): boolean => {
     if (!form) return false;
 
     for (const question of form.questions) {
@@ -60,36 +62,32 @@ export default function FormPage() {
       }
     }
     return true;
-  };
+  }, [form, answers, shouldShowQuestion]);
 
-  const submitAnswers = async () => {
+  const submitAnswers = useCallback(async () => {
     if (!validateForm()) return;
 
     setIsSubmitting(true);
     try {
-      for (const [questionId, answer] of Object.entries(answers)) {
-        if (answer && answer !== "") {
-          const formattedAnswer = Array.isArray(answer)
-            ? answer.join(", ")
-            : answer;
-          mockDataService.createAnswer({
-            formId: id,
-            questionId: questionId,
-            answer: formattedAnswer,
-          });
-        }
-      }
-
+      await submitFormAnswers(id, answers);
       setIsSubmitted(true);
     } catch (error) {
-      if (process.env.NODE_ENV === "development") {
-        console.error("Error submitting answers:", error);
-      }
       alert("Erro ao enviar respostas. Tente novamente.");
     } finally {
       setIsSubmitting(false);
     }
-  };
+  }, [id, answers, validateForm]);
+
+  useEffect(() => {
+    let foundForm = getFormById(id);
+
+    if (!foundForm) {
+      foundForm = mockDataService.getCompleteForm(id);
+    }
+
+    setForm(foundForm);
+    setIsLoading(false);
+  }, [id]);
 
   if (isLoading) {
     return (
