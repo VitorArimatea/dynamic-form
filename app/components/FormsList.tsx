@@ -22,11 +22,9 @@ const FormsList = () => {
 
   useEffect(() => {
     const loadForms = () => {
-      // Carrega formulários do mock (inicial) e do novo sistema
       const mockForms = mockDataService.getForms();
       const syncedForms = getAllForms();
 
-      // Combina ambos evitando duplicatas
       const allForms = [...mockForms];
       syncedForms.forEach((syncForm) => {
         if (!allForms.find((f) => f.id === syncForm.id)) {
@@ -34,17 +32,11 @@ const FormsList = () => {
         }
       });
 
-      console.log("📋 Total forms loaded:", allForms.length);
-      console.log(
-        "Forms:",
-        allForms.map((f) => f.title)
-      );
       setForms(allForms);
     };
 
     loadForms();
 
-    // Recarrega a cada 1 segundo
     const interval = setInterval(loadForms, 1000);
     return () => clearInterval(interval);
   }, []);

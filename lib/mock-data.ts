@@ -39,12 +39,10 @@ const answers: UserAnswer[] = storedData?.answers || [];
 
 export const initializeMockData = () => {
   if (forms.length > 0) {
-    console.log("Mock data already initialized, skipping...");
     return;
   }
 
   const formId = uuidv4();
-  console.log("Initializing mock data...");
 
   forms = [
     {
